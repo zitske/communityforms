@@ -1,8 +1,12 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/app/screens/home/home_screen.dart';
+import 'package:flutter_app/app/screens/logreg/components/recover.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,6 +23,8 @@ class _LogRegDrawer extends State<LogRegDrawer> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   bool _emailvalidate = true;
   bool _passwordvalidate = true;
   bool _obscureText = true;
@@ -26,6 +32,7 @@ class _LogRegDrawer extends State<LogRegDrawer> {
   String emailvalidadeerror = "";
   bool _successlogin;
   String loggedUser;
+  String errorMessage;
 
 //For show/hide password
   void _toggle() {
@@ -129,8 +136,15 @@ class _LogRegDrawer extends State<LogRegDrawer> {
         .user;
     if (user != null) {
       setState(() {
+        _toggled = false;
         _successlogin = true;
+        tipo = "LOGIN";
         print("Register OK");
+        firestore.collection("users").doc(inputData()).set({
+          'name': _auth.currentUser.displayName.toString(),
+          'email': _auth.currentUser.email.toString(),
+          'profimg': _auth.currentUser.photoURL.toString()
+        });
         //_userEmail = user.email;
       });
     } else {
@@ -141,6 +155,38 @@ class _LogRegDrawer extends State<LogRegDrawer> {
     }
   }
 
+  String getFirebaseAuthExceptions(String code) {
+    switch (code) {
+      case "INVALID_EMAIL":
+        return "Your email address appears to be malformed.";
+
+      case "WRONG_PASSWORD":
+        return "Your password is wrong.";
+
+      case "SER_NOT_FOUND":
+        return "User with this email doesn't exist.";
+
+      case "USER_DISABLED":
+        return "User with this email has been disabled.";
+
+      case "TOO_MANY_REQUESTS":
+        return "Muitas tentativas. Tente mais tarde.";
+
+      case "OPERATION_NOT_ALLOWED":
+        return "Signing in with Email and Password is not enabled.";
+
+      default:
+        return 'Erro desconhecido';
+    }
+  }
+
+  String inputData() {
+    final User user = _auth.currentUser;
+    final uid = user.uid;
+    return uid;
+    // here you write the codes to input the data into firestore
+  }
+
 //For login user
   void _signin(String _useremail, String _userpassword) async {
     try {
@@ -148,36 +194,19 @@ class _LogRegDrawer extends State<LogRegDrawer> {
         email: _useremail,
         password: _userpassword,
       );
-      //if (res != null) loggedUser = res.user;
-    } on PlatformException catch (err) {
-      // Handle err
-      print(err);
-    } catch (err) {
-      // other types of Exceptions
+      if (res != null) {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('username', _useremail);
+        prefs.setString('password', _userpassword);
+        print("Saved lg inf");
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomeScreen(uid: inputData())));
+      }
+    } on FirebaseAuthException catch (e) {
+      debugPrint(getFirebaseAuthExceptions(e.code));
     }
-
-    /*final User user = (await _auth.signInWithEmailAndPassword(
-      email: _useremail,
-      password: _userpassword,
-    ))
-        .user;
-    print(user);
-    if (user != null) {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString('email', _useremail);
-      prefs.setString('password', _userpassword);
-      setState(() {
-        _successlogin = true;
-        print("Login OK");
-
-        //_userEmail = user.email;
-      });
-    } else {
-      setState(() {
-        print("Login ERROR");
-        _successlogin = false;
-      });
-    }*/
   }
 
   @override
@@ -190,141 +219,162 @@ class _LogRegDrawer extends State<LogRegDrawer> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    return SafeArea(
-        child: Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              width: width * 0.8,
-              //height: height * 0.05,
-              child: TextField(
-                controller: _email,
-                autocorrect: false,
-                enableSuggestions: false,
-                keyboardType: TextInputType.emailAddress,
-                textAlignVertical: TextAlignVertical.center,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                      borderSide: BorderSide(color: Colors.red, width: 5.0),
-                    ),
-                    errorText: _emailvalidate ? null : '$emailvalidadeerror',
-                    hintText: 'Email'),
-              ),
+    return Scaffold(
+        body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          //Email input
+          Container(
+            color: Theme.of(context).canvasColor,
+            width: width * 0.8,
+            //height: height * 0.05,
+            child: TextFormField(
+              controller: _email,
+              autocorrect: false,
+              enableSuggestions: false,
+              keyboardType: TextInputType.emailAddress,
+              textAlignVertical: TextAlignVertical.center,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                    borderSide: BorderSide(color: Colors.red, width: 5.0),
+                  ),
+                  errorText: _emailvalidate ? null : '$emailvalidadeerror',
+                  hintText: 'Email'),
             ),
-            SizedBox(
-              height: height * 0.01,
+          ),
+          //Spacer
+          SizedBox(
+            height: height * 0.01,
+          ),
+          //Password input
+          Container(
+            width: width * 0.8,
+            //height: height * 0.05,
+            child: TextFormField(
+              controller: _password,
+              autocorrect: false,
+              enableSuggestions: false,
+              keyboardType: TextInputType.visiblePassword,
+              textAlignVertical: TextAlignVertical.center,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                    borderSide: BorderSide(color: Colors.red, width: 5.0),
+                  ),
+                  errorText:
+                      _passwordvalidate ? null : '$passwordvalidadeerror',
+                  hintText: 'Password'),
+              obscureText: _obscureText,
             ),
-            Column(
+          ),
+          //Visibility
+          Container(
+            width: width * 0.8,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: width * 0.8,
-                  //height: height * 0.05,
-                  child: TextFormField(
-                    controller: _password,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    keyboardType: TextInputType.visiblePassword,
-                    textAlignVertical: TextAlignVertical.center,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                          borderSide: BorderSide(color: Colors.red, width: 5.0),
-                        ),
-                        errorText:
-                            _passwordvalidate ? null : '$passwordvalidadeerror',
-                        hintText: 'Password'),
-                    obscureText: _obscureText,
-                  ),
+                  child: TextButton(
+                      onPressed: _toggle,
+                      child: Row(
+                        children: [
+                          new Icon(_obscureText
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          new Text(_obscureText ? "Show" : "Hide")
+                        ],
+                      )),
                 ),
+                Expanded(child: Container()),
+                Container(
+                    child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => RecoverScreen()));
+                  },
+                  child: new Text(
+                    "Forgot the password?",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ))
               ],
             ),
-            Container(
-              width: width * 0.8,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    child: FlatButton(
-                        onPressed: _toggle,
-                        child: new Text(_obscureText ? "Show" : "Hide")),
-                  ),
-                  Expanded(child: Container()),
-                  Container(
-                      child: FlatButton(
-                    onPressed: () {},
-                    child: new Text(
-                      "Forgot the password?",
-                      style: TextStyle(fontSize: 10),
-                    ),
-                  ))
-                ],
-              ),
-            ),
-            SizedBox(
-              height: height * 0.04,
-            ),
-            Container(
-              height: height * 0.05,
-              width: width * 0.8,
-              child: Center(
-                child: RaisedButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  onPressed: () {
-                    setState(
-                      () {
-                        _validateforms();
-                        if ((_emailvalidate && _passwordvalidate) == true) {
-                          if (_toggled != false) {
-                            //register
-                            _register();
-                          } else {
-                            //login
-                            _signin(_email.text, _password.text);
-                          }
-                        }
-                      },
-                    );
-                  },
-                  child: Center(child: Text("$tipo")),
+          ),
+          //Spacer
+          SizedBox(
+            height: height * 0.04,
+          ),
+          //Login/Register button
+          Container(
+            height: height * 0.05,
+            width: width * 0.8,
+            child: Center(
+              child: RaisedButton(
+                color: Theme.of(context).buttonColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
                 ),
+                onPressed: () {
+                  setState(
+                    () {
+                      _validateforms();
+                      if ((_emailvalidate && _passwordvalidate) == true) {
+                        if (_toggled != false) {
+                          //register
+                          _register();
+                        } else {
+                          //login
+                          _signin(_email.text, _password.text);
+                        }
+                      }
+                    },
+                  );
+                },
+                child: Center(child: Text("$tipo")),
               ),
             ),
-            SizedBox(
-              height: height * 0.07,
-            ),
-            FlutterSwitch(
-              activeColor: Colors.green,
-              inactiveColor: Colors.grey[300],
-              toggleColor: Colors.blueGrey[700],
-              width: width * 0.15,
-              height: height * 0.04,
-              valueFontSize: 25.0,
-              toggleSize: height * 0.03,
-              value: _toggled,
-              borderRadius: 30.0,
-              padding: 4.0,
-              showOnOff: false,
-              onToggle: (val) {
-                _toggled = val;
-                setState(() {
-                  if (_toggled == false) {
-                    tipo = "LOGIN";
-                  } else {
-                    tipo = "REGISTER";
-                  }
-                });
-              },
-            )
-          ],
-        ),
+          ),
+          //Spacer
+          SizedBox(
+            height: height * 0.07,
+          ),
+          //Mode switch
+          FlutterSwitch(
+            activeColor: Colors.green,
+            inactiveColor: Colors.grey[300],
+            toggleColor: Colors.blueGrey[700],
+            width: width * 0.15,
+            height: height * 0.04,
+            valueFontSize: 25.0,
+            toggleSize: height * 0.03,
+            value: _toggled,
+            borderRadius: 30.0,
+            padding: 4.0,
+            showOnOff: false,
+            onToggle: (val) {
+              _toggled = val;
+              setState(() {
+                if (_toggled == false) {
+                  tipo = "LOGIN";
+                  DynamicTheme.of(context).setBrightness(Brightness.light);
+                } else {
+                  tipo = "REGISTER";
+                  DynamicTheme.of(context).setBrightness(Brightness.dark);
+                }
+              });
+            },
+          )
+        ],
       ),
     ));
   }

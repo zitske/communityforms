@@ -30,11 +30,16 @@ dependencies:
   cupertino_icons: ^1.0.0
   flutter_switch: ^0.1.5
   email_validator: ^1.0.6
-  firebase_core: ^0.5.3
-  firebase_auth: ^0.18.4
-  cloud_firestore: ^0.14.4
+  firebase_core: ^0.7.0
+  firebase_auth: ^0.20.0+1
+  cloud_firestore: ^0.16.0
   shared_preferences: ^0.5.12+4
-  firebase_dynamic_links: ^0.6.3
+  firebase_dynamic_links: ^0.7.0+1
+  dynamic_theme: ^1.0.1
+  animated_bottom_navigation_bar: ^0.2.1
+  firebase_core_platform_interface: ^3.0.1
+  qr_mobile_vision: ^2.0.0
+  
 
 dev_dependencies:
   flutter_test:
