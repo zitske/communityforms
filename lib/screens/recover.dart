@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/app/screens/logreg/login_screen.dart';
+import 'package:flutter_app/screens/myapp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'logreg_drawer.dart';
+import 'login.dart';
 
 class RecoverScreen extends StatefulWidget {
   @override

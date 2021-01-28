@@ -4,6 +4,8 @@ import 'package:qr_mobile_vision/qr_camera.dart';
 import 'deviceconfig.dart';
 
 class QrRead extends StatefulWidget {
+  final String uid;
+  QrRead({Key key, @required this.uid}) : super(key: key);
   @override
   _QrReadState createState() => _QrReadState();
 }
@@ -43,7 +45,10 @@ class _QrReadState extends State<QrRead> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => DeviceConfig()),
+                                  builder: (context) => DeviceConfig(
+                                        devId: '123456789',
+                                        uid: widget.uid,
+                                      )),
                             );
                           },
                           child: new Container(
@@ -54,7 +59,6 @@ class _QrReadState extends State<QrRead> {
                         ),
                       )
                     : new Center(child: new Text("Camera inactive"))),
-            new Text("QRCODE: $qr"),
           ],
         ),
       ),
