@@ -43,6 +43,7 @@ dependencies:
   chips_choice: ^2.0.1
   firestore_ui: ^1.13.0
   flutter_screenutil: ^4.0.2+8
+  auto_size_text: ^2.1.0
 
 dev_dependencies:
   flutter_test:
@@ -75,10 +76,22 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  fonts:
+    - family: WorkSans
+      fonts:
+        - asset: assets/fonts/WorkSans-Regular.ttf
+        - asset: assets/fonts/WorkSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/WorkSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/WorkSans-Bold.ttf
+          weight: 700
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Bold.ttf
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Medium.ttf
+          weight: 400
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
@@ -89,3 +102,16 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+   # - asset: lib/fonts/Nunito-BoldItalic.ttf
+       # - asset: lib/fonts/Nunito-ExtraBold.ttf
+       # - asset: lib/fonts/Nunito-ExtraBoldItalic.ttf
+       # - asset: lib/fonts/Nunito-ExtraLight.ttf
+       # - asset: lib/fonts/Nunito-ExtraLightItalic.ttf
+       # - asset: lib/fonts/Nunito-Italic.ttf
+       # - asset: lib/fonts/Nunito-Light.ttf
+       # - asset: lib/fonts/Nunito-LightItalic.ttf
+              # - asset: lib/fonts/Nunito-SemiBold.ttf
+       # - asset: lib/fonts/Nunito-SemiBoldItalic.ttf
+        # - asset: lib/fonts/Nunito-Black.ttf
+       # - asset: lib/fonts/Nunito-BlackItalic.ttf

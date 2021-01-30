@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/screens/deviceconfig.dart';
 import 'package:flutter_app/screens/devices.dart';
 import 'package:flutter_app/screens/graph.dart';
+import 'package:flutter_app/screens/myapp.dart';
 import 'package:flutter_app/screens/profile.dart';
+import 'package:flutter_app/utils/singout.dart';
 
 class HomeScreen extends StatefulWidget {
   final String uid;
@@ -29,21 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
       GraphScreen(uid: widget.uid),
       ProfileScreen(uid: widget.uid)
     ];
-    print(widget.uid);
-    print(userId);
-
-    final iconList = <IconData>[Icons.home, Icons.bar_chart, Icons.person];
-
-    void _onTap(int index) {
-      setState(() {
-        activeIndex = index;
-      });
-    }
-
-    return SafeArea(
-        child: Scaffold(
-      body: _screens[activeIndex],
-      floatingActionButton: FloatingActionButton(
+    final List<Widget> _floating = [
+      FloatingActionButton(
         child: Icon(
           Icons.add,
           size: 35,
@@ -61,21 +50,68 @@ class _HomeScreenState extends State<HomeScreen> {
           //params
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      bottomNavigationBar: AnimatedBottomNavigationBar(
-        backgroundColor: Theme.of(context).bottomAppBarColor,
-        inactiveColor: Theme.of(context).disabledColor,
-        activeColor: Theme.of(context).toggleableActiveColor,
-        splashColor: Theme.of(context).splashColor,
-        height: 65,
-        iconSize: 30,
-        icons: iconList,
-        activeIndex: activeIndex,
-        gapLocation: GapLocation.end,
-        notchSmoothness: NotchSmoothness.defaultEdge,
-        onTap: _onTap,
-        //other params
+      FloatingActionButton(
+        backgroundColor: Colors.blue,
+        child: Icon(
+          Icons.settings,
+          size: 35,
+        ),
+        onPressed: () => setState(
+          () {},
+          //params
+        ),
       ),
-    ));
+      FloatingActionButton(
+        backgroundColor: Colors.red,
+        child: Icon(
+          Icons.arrow_forward,
+          size: 35,
+        ),
+        onPressed: () => setState(
+          () {
+            signOut();
+            Navigator.pop(
+                context, MaterialPageRoute(builder: (context) => MyApp()));
+          },
+          //params
+        ),
+      ),
+    ];
+    print(widget.uid);
+    print(userId);
+
+    final iconList = <IconData>[Icons.home, Icons.bar_chart, Icons.person];
+
+    void _onTap(int index) {
+      setState(() {
+        activeIndex = index;
+      });
+    }
+
+    return WillPopScope(
+        onWillPop: () async => !Navigator.of(context).userGestureInProgress,
+        child: SafeArea(
+            bottom: false,
+            top: false,
+            child: Scaffold(
+              body: _screens[activeIndex],
+              floatingActionButton: _floating[activeIndex],
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.endDocked,
+              bottomNavigationBar: AnimatedBottomNavigationBar(
+                backgroundColor: Theme.of(context).bottomAppBarColor,
+                inactiveColor: Theme.of(context).disabledColor,
+                activeColor: Theme.of(context).toggleableActiveColor,
+                splashColor: Theme.of(context).splashColor,
+                height: 65,
+                iconSize: 30,
+                icons: iconList,
+                activeIndex: activeIndex,
+                gapLocation: GapLocation.end,
+                notchSmoothness: NotchSmoothness.defaultEdge,
+                onTap: _onTap,
+                //other params
+              ),
+            )));
   }
 }

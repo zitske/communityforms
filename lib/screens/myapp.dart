@@ -30,6 +30,7 @@ class _MyAppState extends State<MyApp> {
     return new DynamicTheme(
         defaultBrightness: getBright(),
         data: (brightness) => new ThemeData(
+              fontFamily: "WorkSans",
               primarySwatch: Colors.green,
               brightness: brightness,
             ),
@@ -43,3 +44,4 @@ class _MyAppState extends State<MyApp> {
         });
   }
 }
+//Colors.grey[200]
